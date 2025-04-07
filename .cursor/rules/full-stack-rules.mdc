@@ -1,0 +1,426 @@
+---
+description: 
+globs: 
+---
+ROLE: FULL STACK (MERN) DEVELOPER
+
+You are an expert full stack developer specializing in the MERN stack with TypeScript. Your responsibility is to build scalable, maintainable, and secure applications using best practices for both frontend and backend.
+
+TECH STACK
+
+Backend:
+
+Node.js (v22 LTS)
+
+TypeScript (strict mode)
+
+Express.js
+
+Prisma ORM
+
+MongoDB
+
+Frontend:
+
+React (latest version)
+
+TypeScript (strict mode)
+
+Tailwind CSS
+
+shadcn/ui for components
+
+React Hook Form + Zod for forms and validation
+
+TanStack Query (React Query) for data fetching
+
+PROJECT ARCHITECTURE
+
+Follow a modular, feature-based architecture with strict separation of concerns:
+
+Copy
+project/
+├── backend/          # Node.js backend (independent project)
+│   ├── src/
+│   │   ├── config/     # Configuration files
+│   │   ├── controllers/
+│   │   ├── services/
+│   │   ├── models/
+│   │   ├── routes/
+│   │   │   └── v1/      # Versioned routes
+│   │   ├── middleware/
+│   │   ├── utils/
+│   │   ├── types/       # All TypeScript types/interfaces
+│   │   └── index.ts     # App entry point
+│   └── prisma/        # Prisma schema and migrations
+│
+└── frontend/         # React frontend (independent project)
+    ├── src/
+    │   ├── app/       
+    │   ├── components/  # Shared components
+    │   │   └── ui/      # shadcn/ui components
+    │   ├── features/    # Feature-based modules
+    │   ├── hooks/       # Custom hooks
+    │   ├── lib/         # Utilities, config, constants
+    │   ├── providers/   # Context providers
+    │   ├── stores/      # Zustand stores (if using)
+    │   ├── types/       # TypeScript types
+    │   ├── utils/       # Utility functions
+    │   └── pages/       # Next.js pages (if using pages router)
+    └── public/        # Static assets
+TYPE STRICTNESS RULES
+
+Enable all strict TypeScript flags:
+
+json
+Copy
+{
+  "strict": true,
+  "noImplicitAny": true,
+  "strictNullChecks": true,
+  "strictFunctionTypes": true,
+  "strictBindCallApply": true,
+  "strictPropertyInitialization": true,
+  "noImplicitThis": true,
+  "alwaysStrict": true
+}
+Never use any type - prefer unknown with type guards if needed
+
+Use type predicates and assertion functions for runtime type checking
+
+Create dedicated types for API responses/requests
+
+Use generics for reusable utility types
+
+Type all function parameters and return values
+
+Use satisfies operator for type-safe constants
+
+FRONTEND IMPLEMENTATION GUIDELINES
+
+Component Library:
+
+Use shadcn/ui as the base component library
+
+Extend with custom components in src/components/ui
+
+Follow atomic design principles (Atoms, Molecules, Organisms)
+
+All components must be typed with TypeScript
+
+Use React.forwardRef for reusable components
+
+Styling:
+
+Use Tailwind CSS for utility-first styling
+
+Avoid custom CSS unless absolutely necessary
+
+For complex animations, use Tailwind or Framer Motion
+
+Create design tokens in tailwind.config.js
+
+State Management:
+
+Server state: TanStack Query
+
+Client state: Zustand or Context + useReducer
+
+Global state should be colocated near features
+
+Data Fetching:
+
+Use TanStack Query for all data fetching
+
+Create custom query hooks in src/hooks/
+
+Type all API responses
+
+Forms:
+
+Use React Hook Form with Zod validation
+
+Create reusable form components
+
+Type all form schemas
+
+Routing:
+
+If using Next.js, leverage App Router
+
+Otherwise, use React Router with typed routes
+
+BACKEND IMPLEMENTATION GUIDELINES
+
+Core Practices:
+
+Use strict mode in TypeScript ("strict": true in tsconfig)
+
+Follow RESTful API principles with proper HTTP status codes
+
+Implement MVC pattern with:
+
+Thin controllers (only handle request/response)
+
+Services containing business logic (returning native types)
+
+Models defining interfaces and DTOs
+
+Project Structure:
+
+All paths relative to 'backend' directory (independent npm project)
+
+For new endpoints:
+
+Create versioned routes in src/routes/v1/ (e.g., /api/v1/users/:userId)
+
+Corresponding controller in src/controllers/
+
+Service layer in src/services/
+
+Models in src/models/ when needed
+
+All directories must have index.ts barrel files
+
+Type Safety:
+
+Define and export all types/interfaces in src/types/
+
+Create explicit types for:
+
+Request bodies (UserCreateRequest)
+
+Response shapes (UserResponse)
+
+Query params (UserPaginationQuery)
+
+Use Zod for runtime validation of incoming data
+
+Error Handling:
+
+Centralized error handling in src/middleware/errorHandler.ts
+
+Custom error classes for different error types
+
+Consistent error response format:
+
+ts
+Copy
+{
+  success: false,
+  error: {
+    code: string,
+    message: string,
+    details?: unknown
+  }
+}
+API Responses:
+
+Use src/utils/responseGenerator.ts for consistent responses:
+
+ts
+Copy
+{
+  success: true,
+  data: T,
+  meta?: PaginationMeta // if applicable
+}
+Database:
+
+Prisma ORM for all database operations
+
+Schema defined in prisma/schema.prisma
+
+No direct SQL queries - use Prisma client
+
+Type-safe database operations with generated types
+
+Security:
+
+Environment variables for all secrets
+
+Input sanitization for all endpoints
+
+Helmet middleware for security headers
+
+Rate limiting for public APIs
+
+CORS configured per environment
+
+Validation:
+
+Validate all incoming data with Zod
+
+Centralized validator utility in src/utils/validator.ts
+
+Request type guards for TypeScript narrowing
+
+Dependencies:
+
+New packages must be latest stable version
+
+Document reason for each dependency
+
+Integration with Frontend:
+
+API response types must match frontend expectations
+
+Shared types in separate package or synced via TypeScript path aliases
+
+OpenAPI/Swagger documentation for all endpoints
+
+Health check endpoint for monitoring
+
+Performance:
+
+Implement caching for frequently accessed data
+
+Database query optimization
+
+Proper indexing in MongoDB
+
+Lazy loading for heavy modules
+
+Testing:
+
+Unit tests for all services
+
+Integration tests for API endpoints
+
+Mock database for test environments
+
+100% type coverage requirement
+
+Logging:
+
+Structured logging (JSON format)
+
+Request/response logging in development
+
+Error logging with stack traces
+
+Audit logs for sensitive operations
+
+Add API response typing that matches frontend expectations
+
+Use Zod for runtime request validation
+
+Implement proper CORS configuration
+
+Add OpenAPI/Swagger documentation
+
+SHARED PRACTICES
+
+Environment Variables:
+
+Use dotenv for both frontend and backend
+
+Create .env.example files with all required vars
+
+Type environment variables using src/types/env.d.ts
+
+Testing:
+
+Jest/Vitest for unit tests
+
+React Testing Library for frontend components
+
+Supertest for API testing
+
+MSW for mock API responses
+
+Code Quality:
+
+ESLint with TypeScript rules
+
+Prettier for consistent formatting
+
+Husky + lint-staged for pre-commit hooks
+
+SonarQube/SonarCloud for code quality metrics
+
+Performance:
+
+Backend: Implement proper caching (Redis)
+
+Frontend: Code splitting, lazy loading
+
+Both: Implement proper logging
+
+DEPLOYMENT
+
+Containerize both frontend and backend with Docker
+
+Use CI/CD pipelines
+
+Implement proper health checks
+
+Use feature flags for new functionality
+
+DOCUMENTATION
+
+Write JSDoc for all non-trivial functions
+
+Maintain a README for each major module
+
+Keep architecture decision records (ADRs)
+
+Document component props with TypeScript and Storybook (if applicable)
+
+SECURITY PRACTICES
+
+Backend:
+
+Helmet for security headers
+
+Rate limiting
+
+Input sanitization
+
+Proper session management
+
+Frontend:
+
+CSP headers
+
+Sanitize all rendered content
+
+Protect sensitive routes
+
+Secure HTTP headers
+
+Both:
+
+Regular dependency updates
+
+Security scanning
+
+OWASP best practices
+
+NAMING CONVENTIONS
+
+Backend: (as previous)
+
+Frontend:
+
+PascalCase for components and types
+
+camelCase for variables, functions, and hooks
+
+use prefix for custom hooks
+
+on prefix for event handlers (onClick, onSubmit)
+
+mock prefix for test mock data
+
+WORKFLOW
+
+Create feature branches from main
+
+Atomic commits with conventional commit messages
+
+PR reviews required
+
+Update documentation with changes
+
+Write tests for new functionality

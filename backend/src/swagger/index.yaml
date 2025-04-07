@@ -1,0 +1,11 @@
+paths:
+  /auth/login:
+    $ref: './paths/auth.yaml#/login'
+  /auth/register:
+    $ref: './paths/auth.yaml#/register'
+  /bookings:
+    $ref: './paths/bookings.yaml#/bookings'
+  /bookings/my-bookings:
+    $ref: './paths/bookings.yaml#/bookings~1my-bookings'
+  /bookings/stats:
+    $ref: './paths/bookings.yaml#/bookings~1stats' 

@@ -1,0 +1,157 @@
+/bookings:
+  get:
+    tags:
+      - Bookings
+    summary: Get all bookings
+    description: Get all bookings (admin only)
+    security:
+      - BearerAuth: []
+    responses:
+      200:
+        description: Successfully retrieved bookings
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Booking'
+      401:
+        $ref: '#/components/responses/UnauthorizedError'
+      403:
+        $ref: '#/components/responses/ForbiddenError'
+      500:
+        $ref: '#/components/responses/InternalServerError'
+
+/bookings/create:
+  post:
+    tags:
+      - Bookings
+    summary: Create a new booking
+    description: Create a new booking for the authenticated user
+    security:
+      - BearerAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - pickupId
+              - dropId
+              - scheduledTime
+              - vehicleType
+              - passengerCount
+            properties:
+              pickupId:
+                type: string
+                format: uuid
+              dropId:
+                type: string
+                format: uuid
+              scheduledTime:
+                type: string
+                format: date-time
+              vehicleType:
+                type: string
+                enum: [SEDAN, SUV, VAN]
+              passengerCount:
+                type: integer
+                minimum: 1
+                maximum: 10
+              notes:
+                type: string
+    responses:
+      201:
+        description: Booking created successfully
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookingResponse'
+      400:
+        $ref: '#/components/responses/ValidationError'
+      401:
+        $ref: '#/components/responses/UnauthorizedError'
+      500:
+        $ref: '#/components/responses/InternalServerError'
+
+/bookings/my-bookings:
+  get:
+    tags:
+      - Bookings
+    summary: Get user's bookings
+    description: Retrieves all bookings for the authenticated user
+    security:
+      - BearerAuth: []
+    responses:
+      200:
+        description: Successfully retrieved user's bookings
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Booking'
+      401:
+        $ref: '#/components/responses/UnauthorizedError'
+      500:
+        $ref: '#/components/responses/InternalServerError'
+
+/bookings/stats:
+  get:
+    tags:
+      - Bookings
+    summary: Get booking statistics
+    description: Get statistics about bookings (admin only)
+    security:
+      - BearerAuth: []
+    responses:
+      200:
+        description: Successfully retrieved booking statistics
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: object
+                  properties:
+                    total:
+                      type: number
+                      example: 100
+                    pending:
+                      type: number
+                      example: 20
+                    confirmed:
+                      type: number
+                      example: 30
+                    inProgress:
+                      type: number
+                      example: 10
+                    completed:
+                      type: number
+                      example: 35
+                    cancelled:
+                      type: number
+                      example: 5
+      401:
+        $ref: '#/components/responses/UnauthorizedError'
+      403:
+        $ref: '#/components/responses/ForbiddenError'
+      500:
+        $ref: '#/components/responses/InternalServerError' 

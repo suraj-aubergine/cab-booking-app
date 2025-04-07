@@ -1,0 +1,44 @@
+components:
+  schemas:
+    Booking:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        pickupId:
+          type: string
+          format: uuid
+        dropId:
+          type: string
+          format: uuid
+        scheduledTime:
+          type: string
+          format: date-time
+        vehicleType:
+          type: string
+          enum: [SEDAN, SUV, VAN]
+        passengerCount:
+          type: integer
+          minimum: 1
+          maximum: 10
+        status:
+          type: string
+          enum: [PENDING, CONFIRMED, IN_PROGRESS, COMPLETED, CANCELLED]
+        notes:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        pickup:
+          $ref: '#/components/schemas/Location'
+        drop:
+          $ref: '#/components/schemas/Location'
+        user:
+          $ref: '#/components/schemas/UserBasic' 

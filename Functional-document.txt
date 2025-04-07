@@ -1,0 +1,296 @@
+Functional Document for Office Cab Booking App
+Introduction
+The Office Cab Booking App is designed to streamline and manage the organization's cab pick-up and drop-off service for employees. This application ensures that employees can easily request transport, and managers can oversee and approve requests efficiently. The system also includes an admin panel for managing routes and scheduling, as well as a module for addressing user concerns related to safety and cleanliness.
+
+User Roles and Features
+User (Employee) 
+Opt-in for Pickup and/or Drop-off: Employees can choose whether they need a cab for pick-up, drop-off, or both.
+
+
+Select Time and Location: Users can specify the time and pick-up/drop location according to predefined routes.
+
+
+Ad-hoc Requests: Employees can raise requests for ad-hoc cab use, such as client visits or late drop requests.
+
+
+View History and Profile: Users can see their booking history and view their profile, including department, role, and employee ID.
+
+
+Recurring Requests: Employees can schedule cab services for specific days and times based on available routes.
+
+
+Complaint Management: A module for raising complaints related to safety, cleanliness, or any other concerns regarding the cab service.
+
+
+Real-time Cab Tracking: Users can track their assigned cab in real-time.
+
+
+Emergency SOS Feature: A panic button in the app to alert security in case of emergencies.
+
+
+Rating & Feedback: Users can provide ratings and feedback for cab rides and drivers.
+
+
+Notification System: Automated alerts for ride confirmation, arrival time, and trip status updates via SMS.
+
+
+
+Manager
+Approve Pickup and Drop Requests: Managers have the authority to approve or deny employees' regular cab service requests.
+
+
+Approve Ad-hoc Requests: Managers can approve ad-hoc requests for emergency or special transport needs.
+
+
+Self-Opt-in for Cab Service: Managers can also use the cab service just like regular users.
+
+
+All Employee Features: Managers have access to all functionalities available to employees, including booking history, profile management, and complaint registration.
+
+
+Monitor Employee Travel Logs: Managers can review employee ride history to track usage and manage approvals better.
+
+
+Generate Reports: Managers can generate reports on cab usage within their team.
+
+
+
+Driver
+No Portal Login: Drivers do not have direct login access to the app.
+
+
+Assigned to Specific Car and Route: Each driver is assigned a vehicle and a predefined route.
+
+
+Scheduled Assignments: Drivers operate based on fixed schedules assigned by the admin.
+
+
+Trip Status Updates: Drivers can update ride status (e.g., on the way, arrived, trip completed).
+
+
+Navigation Assistance: Integrated GPS navigation to optimize routes.
+
+
+
+Admin
+Create and Manage Routes: Admins define and update cab routes and schedules.
+
+
+Manage Pickup Times: Admins configure available pick-up times based on organizational needs.
+
+
+Full System Access: Admins oversee all users, manage complaints, and ensure smooth operation of the cab service.
+
+
+Dashboard for Monitoring: A centralized dashboard to view ride analytics, complaints, and operational efficiency.
+
+
+Audit & Security Logs: Admins can monitor system usage and security logs for compliance and troubleshooting.
+
+
+Manage Driver Assignments: Assign drivers to routes dynamically based on demand.
+
+
+Cab Maintenance Scheduling: Schedule and track maintenance for cabs to ensure vehicle safety.
+
+
+Multi-Factor Authentication: Secure login for admins and managers to prevent unauthorized access.
+
+
+
+System Workflow
+Employees opt-in for cab service and submit requests for pick-up/drop or ad-hoc rides.
+
+
+Managers approve requests based on availability and organizational policies.
+
+
+Admins configure routes and schedules, ensuring optimal resource allocation.
+
+
+Drivers follow assigned schedules and complete trips based on the predefined routes.
+
+
+Users can view their trip history, raise complaints if needed, and modify their booking preferences.
+
+
+Employees receive notifications and can track cabs in real-time.
+
+
+Admins monitor overall cab utilization and address complaints or system issues proactively.
+
+
+
+User Flow
+1. Employee Flow
+Login & Profile Access
+
+
+Employee logs in using company credentials.
+
+
+Views profile, including department, role, and employee ID.
+
+
+Cab Service Request
+
+
+Selects Pick-up, Drop-off, or Both.
+
+
+Chooses date(s) and preferred time slots.
+
+
+Selects location from available routes.
+
+
+Submits the request.
+
+
+Manager Approval (If Required)
+
+
+If approval is required, the request is sent to the manager.
+
+
+Employee gets notified of approval or rejection.
+
+
+Ad-hoc Request (Client Visit / Late Drop)
+
+
+Employee submits an ad-hoc request.
+
+
+Manager reviews and approves/rejects the request.
+
+
+Cab Tracking & Notifications
+
+
+Employee receives booking confirmation.
+
+
+Real-time tracking of the assigned cab.
+
+
+Notifications for cab arrival, delays, and trip completion.
+
+
+Trip Completion & Feedback
+
+
+Employee marks the trip as completed.
+
+
+Provides feedback and rating for the driver and cab condition.
+
+
+Complaint Management (If Needed)
+
+
+Employee raises a complaint about safety, cleanliness, or service issues.
+
+
+Admin reviews and takes necessary action.
+
+
+
+2. Manager Flow
+Login & Dashboard Access
+
+
+Views requests from employees under their supervision.
+
+
+Approval Process
+
+
+Reviews and approves/rejects standard pick-up/drop requests.
+
+
+Reviews and approves/rejects ad-hoc requests.
+
+
+Monitor Travel Logs
+
+
+Views reports on employee cab usage.
+
+
+Generate Reports
+
+
+Exports data on team travel trends for analysis.
+
+
+Self Cab Booking (Optional)
+
+
+Managers can also book a cab for themselves using the same process as employees.
+
+
+
+3. Driver Flow
+Assigned to Route & Schedule
+
+
+Admin assigns a driver to a specific car and route.
+
+
+Driver follows the set schedule.
+
+
+Trip Status Updates
+
+
+Marks trip as On the Way, Arrived, and Completed.
+
+
+Navigation Assistance
+
+
+Uses integrated GPS for optimal routing.
+
+
+
+4. Admin Flow
+Login & Full Access Dashboard
+
+
+Manages all users, routes, and schedules.
+
+
+Route & Schedule Management
+
+
+Creates/modifies routes and assigns pick-up/drop points.
+
+
+Sets available time slots.
+
+
+Driver & Vehicle Management
+
+
+Assigns drivers to cars and schedules.
+
+
+Tracks cab maintenance schedules.
+
+
+Monitor System & Reports
+
+
+Monitors cab utilization and employee travel trends.
+
+
+Reviews and resolves complaints.
+
+
+Security & Compliance
+
+
+Manages system security, authentication, and audit logs.
+
+
