@@ -3,6 +3,8 @@ import jwt from 'jsonwebtoken';
 import { prisma } from '../index';
 import { comparePasswords, hashPassword } from '../utils/auth';
 import { LoginRequest, RegisterRequest } from '../types/auth';
+import { SignOptions } from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
 
 export const authController = {
   async login(req: Request<{}, {}, LoginRequest>, res: Response) {
@@ -25,7 +27,7 @@ export const authController = {
       }
 
       // Verify password
-      const isPasswordValid = await comparePasswords(password, user.password);
+      const isPasswordValid = await bcrypt.compare(password, user.password);
       console.log('Password valid:', isPasswordValid);
 
       if (!isPasswordValid) {
@@ -38,12 +40,22 @@ export const authController = {
         });
       }
 
-      // Generate JWT token
-      const token = jwt.sign(
-        { userId: user.id, role: user.role },
-        process.env.JWT_SECRET!,
-        { expiresIn: process.env.JWT_EXPIRES_IN }
-      );
+      // Generate JWT token with proper typing
+      const jwtSecret = process.env.JWT_SECRET;
+      if (!jwtSecret) {
+        throw new Error('JWT_SECRET is not defined');
+      }
+
+      const tokenPayload = {
+        userId: user.id,
+        role: user.role
+      };
+
+      const signOptions: SignOptions = {
+        expiresIn: process.env.JWT_EXPIRES_IN || '1d'
+      };
+
+      const token = jwt.sign(tokenPayload, jwtSecret, signOptions);
 
       return res.json({
         success: true,
@@ -61,13 +73,13 @@ export const authController = {
         },
       });
     } catch (error) {
-      console.error('Login error details:', error);
+      console.error('Login error:', error);
       return res.status(500).json({
         success: false,
         error: {
           code: 'INTERNAL_SERVER_ERROR',
           message: 'An error occurred during login',
-          details: process.env.NODE_ENV === 'development' ? error.message : undefined,
+          details: error instanceof Error ? error.message : 'Unknown error',
         },
       });
     }

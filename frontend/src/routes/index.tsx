@@ -1,106 +1,86 @@
 import { createBrowserRouter } from 'react-router-dom';
+import { RootLayout } from '@/components/layouts/RootLayout';
+import { DashboardLayout } from '@/components/layouts/DashboardLayout';
+import { AdminLayout } from '@/components/layouts/AdminLayout';
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
+import { UserRole } from '@/types/auth';
+import { ErrorBoundary, ErrorPage } from '@/components/ErrorBoundary';
+import { Navigate } from 'react-router-dom';
+
+// Auth pages
 import { Login } from '@/pages/auth/Login';
 import { Register } from '@/pages/auth/Register';
-import { DashboardLayout } from '@/components/layouts/DashboardLayout';
+
+// User pages
 import { Dashboard } from '@/pages/Dashboard';
 import { Bookings } from '@/pages/bookings/Bookings';
 import { NewBooking } from '@/pages/bookings/NewBooking';
+import { Settings } from '@/pages/settings/Settings';
+
+// Admin pages
 import { AdminDashboard } from '@/pages/admin/AdminDashboard';
-import { DriverDashboard } from '@/pages/driver/DriverDashboard';
-import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
-import { UserRole } from '@/types/auth';
-import { Settings } from "@/pages/settings/Settings";
-import { MyBookings } from "@/pages/bookings/MyBookings";
 import { UsersTable } from '@/pages/admin/UsersTable';
 import { DriversTable } from '@/pages/admin/DriversTable';
 import { VehiclesTable } from '@/pages/admin/VehiclesTable';
 import { BookingsTable } from '@/pages/admin/BookingsTable';
+import { AdminSettings } from '@/pages/admin/AdminSettings';
+import { NotFound } from '@/pages/NotFound';
 
 export const router = createBrowserRouter([
   {
-    path: 'login',
-    element: <Login />,
-  },
-  {
-    path: 'register',
-    element: <Register />,
-  },
-  {
-    path: 'app',
-    element: (
-      <ProtectedRoute>
-        <DashboardLayout />
-      </ProtectedRoute>
-    ),
+    element: <RootLayout />,
+    errorElement: <ErrorPage />,
     children: [
       {
-        path: '',
-        element: <Dashboard />,
+        path: '/login',
+        element: <Login />,
       },
       {
-        path: 'bookings',
-        element: <MyBookings />,
+        path: '/register',
+        element: <Register />,
       },
       {
-        path: 'bookings/new',
-        element: <NewBooking />,
-      },
-      {
-        path: 'admin',
+        path: '/app',
         element: (
-          <ProtectedRoute allowedRoles={[UserRole.ADMIN]}>
-            <AdminDashboard />
-          </ProtectedRoute>
+          <ErrorBoundary>
+            <ProtectedRoute>
+              <DashboardLayout />
+            </ProtectedRoute>
+          </ErrorBoundary>
         ),
+        children: [
+          { index: true, element: <Dashboard /> },
+          { path: 'bookings', element: <Bookings /> },
+          { path: 'bookings/new', element: <NewBooking /> },
+          { path: 'settings', element: <Settings /> },
+        ],
       },
       {
-        path: 'admin/users',
+        path: '/app/admin',
         element: (
-          <ProtectedRoute allowedRoles={[UserRole.ADMIN]}>
-            <UsersTable />
-          </ProtectedRoute>
+          <ErrorBoundary>
+            <ProtectedRoute allowedRoles={[UserRole.ADMIN]}>
+              <AdminLayout />
+            </ProtectedRoute>
+          </ErrorBoundary>
         ),
+        children: [
+          { index: true, element: <AdminDashboard /> },
+          { path: 'users', element: <UsersTable /> },
+          { path: 'drivers', element: <DriversTable /> },
+          { path: 'vehicles', element: <VehiclesTable /> },
+          { path: 'bookings', element: <BookingsTable /> },
+          { path: 'settings', element: <AdminSettings /> },
+        ],
       },
       {
-        path: 'admin/drivers',
-        element: (
-          <ProtectedRoute allowedRoles={[UserRole.ADMIN]}>
-            <DriversTable />
-          </ProtectedRoute>
-        ),
+        path: '/',
+        element: <Login />,
       },
       {
-        path: 'admin/vehicles',
-        element: (
-          <ProtectedRoute allowedRoles={[UserRole.ADMIN]}>
-            <VehiclesTable />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: 'admin/bookings',
-        element: (
-          <ProtectedRoute allowedRoles={[UserRole.ADMIN]}>
-            <BookingsTable />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: 'driver',
-        element: (
-          <ProtectedRoute allowedRoles={[UserRole.DRIVER]}>
-            <DriverDashboard />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: 'settings',
-        element: <Settings />,
+        path: '*',
+        element: <NotFound />,
       },
     ],
-  },
-  {
-    path: '*',
-    element: <Login />,
   },
 ]); 

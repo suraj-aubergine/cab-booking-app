@@ -5,35 +5,44 @@ import { User } from '@/types/auth'
 interface AuthState {
   token: string | null
   user: User | null
-  setToken: (token: string | null) => void
-  setUser: (user: User | null) => void
-  logout: () => void
+  isAuthenticated: boolean
+  setAuth: (token: string, user: User) => void
+  clearAuth: () => void
+  getToken: () => string | null
 }
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       token: null,
       user: null,
-      setToken: (token) => {
-        set({ token })
-        if (token) {
-          localStorage.setItem('token', token)
-        } else {
-          localStorage.removeItem('token')
-        }
+      isAuthenticated: false,
+      setAuth: (token, user) => {
+        console.log('Setting auth state:', { token, user })
+        set({
+          token,
+          user,
+          isAuthenticated: true
+        })
       },
-      setUser: (user) => set({ user }),
-      logout: () => {
-        set({ token: null, user: null })
-        localStorage.removeItem('token')
-        localStorage.removeItem('auth-storage')
+      clearAuth: () => {
+        console.log('Clearing auth state')
+        set({
+          token: null,
+          user: null,
+          isAuthenticated: false
+        })
       },
+      getToken: () => get().token,
     }),
     {
       name: 'auth-storage',
       storage: createJSONStorage(() => localStorage),
-      partialize: (state) => ({ token: state.token, user: state.user }),
+      partialize: (state) => ({
+        token: state.token,
+        user: state.user,
+        isAuthenticated: state.isAuthenticated,
+      }),
     }
   )
 ) 

@@ -1,9 +1,9 @@
+import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { useNavigate, Link } from "react-router-dom";
-import { useMutation } from "@tanstack/react-query";
-import { api } from "@/lib/api";
+import * as z from "zod";
+import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -14,96 +14,78 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useToast } from "@/hooks/useToast";
-import { UserRole } from "@/types/auth";
-import { BackgroundBeams } from "@/components/ui/background-beams";
-import { AbstractBackground } from "@/components/ui/abstract-background";
-
-export enum Department {
-  ENGINEERING = "ENGINEERING",
-  SALES = "SALES",
-  MARKETING = "MARKETING",
-  FINANCE = "FINANCE",
-  HR = "HR",
-  OPERATIONS = "OPERATIONS",
-}
 
 const registerSchema = z.object({
+  firstName: z.string().min(2, "First name must be at least 2 characters"),
+  lastName: z.string().min(2, "Last name must be at least 2 characters"),
   email: z.string().email("Invalid email address"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
-  firstName: z.string().min(2, "First name is required"),
-  lastName: z.string().min(2, "Last name is required"),
-  role: z.nativeEnum(UserRole),
-  gender: z.enum(["MALE", "FEMALE", "OTHER"], {
-    required_error: "Please select your gender",
-  }),
-  phone: z.string()
-    .min(10, "Phone number must be at least 10 digits")
-    .regex(/^\d+$/, "Phone number must contain only digits"),
-  department: z.nativeEnum(Department, {
-    required_error: "Please select your department",
-  }),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  confirmPassword: z.string(),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
 });
 
-type RegisterForm = z.infer<typeof registerSchema>;
+type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export function Register() {
-  const { toast } = useToast();
   const navigate = useNavigate();
+  const { register } = useAuth();
+  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
 
-  const form = useForm<RegisterForm>({
+  const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
-      role: UserRole.EMPLOYEE,
+      firstName: "",
+      lastName: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
     },
   });
 
-  const register = useMutation({
-    mutationFn: async (data: RegisterForm) => {
-      const response = await api.post("/auth/register", data);
-      return response.data;
-    },
-    onSuccess: () => {
-      toast({
-        title: "Registration successful",
-        description: "Please login with your credentials",
-      });
+  async function onSubmit(data: RegisterFormValues) {
+    try {
+      setIsLoading(true);
+      await register(data);
       navigate("/login");
-    },
-    onError: (error: any) => {
+      toast({
+        title: "Success",
+        description: "Account created successfully. Please sign in.",
+      });
+    } catch (error) {
       toast({
         title: "Error",
-        description: error.response?.data?.error?.message || "Registration failed",
+        description: "Failed to create account. Please try again.",
         variant: "destructive",
       });
-    },
-  });
-
-  function onSubmit(data: RegisterForm) {
-    register.mutate(data);
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative isolate overflow-hidden">
-      <AbstractBackground />
-      
-      <div className="w-full max-w-md p-8 space-y-6 bg-white/80 dark:bg-gray-950/80 backdrop-blur-xl rounded-lg shadow-2xl border border-gray-200 dark:border-gray-800 relative z-10">
-        <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight">Create an account</h1>
-          <p className="text-muted-foreground">
-            Enter your details to register
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
+      <div className="w-full max-w-md space-y-8">
+        <div>
+          <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
+            Create a new account
+          </h2>
+          <p className="mt-2 text-center text-sm text-gray-600">
+            Or{" "}
+            <Link
+              to="/login"
+              className="font-medium text-primary hover:text-primary/90"
+            >
+              sign in to your account
+            </Link>
           </p>
         </div>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
@@ -161,7 +143,7 @@ export function Register() {
                   <FormControl>
                     <Input
                       type="password"
-                      placeholder="••••••••"
+                      placeholder="Enter your password"
                       {...field}
                     />
                   </FormControl>
@@ -172,93 +154,17 @@ export function Register() {
 
             <FormField
               control={form.control}
-              name="phone"
+              name="confirmPassword"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Phone Number</FormLabel>
+                  <FormLabel>Confirm Password</FormLabel>
                   <FormControl>
                     <Input
-                      type="tel"
-                      placeholder="Enter your phone number"
+                      type="password"
+                      placeholder="Confirm your password"
                       {...field}
-                      onChange={(e) => {
-                        const value = e.target.value.replace(/\D/g, '');
-                        field.onChange(value);
-                      }}
                     />
                   </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="gender"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Gender</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select gender" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="MALE">Male</SelectItem>
-                        <SelectItem value="FEMALE">Female</SelectItem>
-                        <SelectItem value="OTHER">Other</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="role"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Role</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select role" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value={UserRole.EMPLOYEE}>Employee</SelectItem>
-                        <SelectItem value={UserRole.DRIVER}>Driver</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <FormField
-              control={form.control}
-              name="department"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Department</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select department" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {Object.entries(Department).map(([key, value]) => (
-                        <SelectItem key={value} value={value}>
-                          {key.charAt(0) + key.slice(1).toLowerCase()}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
@@ -267,22 +173,12 @@ export function Register() {
             <Button
               type="submit"
               className="w-full"
-              disabled={register.isPending}
+              disabled={isLoading}
             >
-              {register.isPending ? "Creating account..." : "Create account"}
+              {isLoading ? "Creating account..." : "Create account"}
             </Button>
           </form>
         </Form>
-
-        <div className="text-center text-sm">
-          <span className="text-muted-foreground">Already have an account? </span>
-          <Link
-            to="/login"
-            className="text-primary hover:underline font-medium"
-          >
-            Login here
-          </Link>
-        </div>
       </div>
     </div>
   );

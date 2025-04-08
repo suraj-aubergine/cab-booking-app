@@ -1,0 +1,26 @@
+---
+description: 
+globs: 
+---
+When helping me with my MERN stack project, please:
+
+1. Check if all imported files exist before suggesting code changes
+2. When creating new components that depend on other files, create ALL required dependencies
+3. Verify that the import paths match my project structure
+4. If you're unsure about a file's existence, ask me first or provide the complete implementation
+5. When suggesting UI components, include all necessary utility functions and dependencies
+6. For state management stores, provide the complete implementation
+7. Include package.json updates if new npm packages are needed
+
+Also make sure:
+1. The UI is beautiful and follows the theme.
+2. The form validations are added
+3. The end to end API is connected and proper error handling is there.
+4. Check if all imported files exist before suggesting code changes
+
+My project uses:
+- TypeScript with strict mode
+- React with shadcn/ui components
+- Zustand for state management
+- Tailwind CSS for styling
+- Vite as the build tool

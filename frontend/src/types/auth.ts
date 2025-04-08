@@ -1,7 +1,6 @@
 export enum UserRole {
-  EMPLOYEE = 'EMPLOYEE',
-  MANAGER = 'MANAGER',
   ADMIN = 'ADMIN',
+  EMPLOYEE = 'EMPLOYEE',
   DRIVER = 'DRIVER'
 }
 
@@ -11,14 +10,11 @@ export interface User {
   firstName: string;
   lastName: string;
   role: UserRole;
-  department?: string;
-  phone?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface AuthResponse {
-  success: boolean;
-  data: {
-    token: string;
-    user: User;
-  };
+  token: string;
+  user: User;
 } 

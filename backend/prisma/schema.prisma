@@ -64,6 +64,7 @@ model User {
   approvals    Booking[] @relation("BookingApprovals")
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
+  lastLoginAt  DateTime?
 
   @@index([email])
   @@index([managerId])
@@ -136,6 +137,7 @@ model Driver {
   trips         Trip[]
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+  status        String    @default("AVAILABLE")
 
   @@index([licenseNumber])
 }
@@ -203,6 +205,7 @@ model Incident {
   longitude   Float
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  resolvedAt  DateTime?
 
   @@index([tripId])
 }
