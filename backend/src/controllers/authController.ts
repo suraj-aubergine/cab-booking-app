@@ -5,6 +5,7 @@ import { comparePasswords, hashPassword } from '../utils/auth';
 import { LoginRequest, RegisterRequest } from '../types/auth';
 import { SignOptions } from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
+import { Gender } from '@prisma/client';
 
 export const authController = {
   async login(req: Request<{}, {}, LoginRequest>, res: Response) {
@@ -85,18 +86,21 @@ export const authController = {
     }
   },
 
-  async register(req: Request<{}, {}, RegisterRequest>, res: Response) {
+  async register(req: Request, res: Response) {
     try {
-      const { email, password, firstName, lastName, gender, department } = req.body;
+      const { email, password, firstName, lastName, role, department } = req.body;
 
       // Check if user already exists
-      const existingUser = await prisma.user.findUnique({ where: { email } });
+      const existingUser = await prisma.user.findUnique({
+        where: { email },
+      });
+
       if (existingUser) {
-        return res.status(409).json({
+        return res.status(400).json({
           success: false,
           error: {
-            code: 'EMAIL_EXISTS',
-            message: 'Email already registered',
+            code: 'USER_EXISTS',
+            message: 'User with this email already exists',
           },
         });
       }
@@ -104,16 +108,16 @@ export const authController = {
       // Hash password
       const hashedPassword = await hashPassword(password);
 
-      // Create user
+      // Create new user
       const user = await prisma.user.create({
         data: {
           email,
           password: hashedPassword,
           firstName,
           lastName,
-          gender,
+          role,
           department,
-          role: 'EMPLOYEE', // Default role for registration
+          gender: Gender.OTHER, // Set a default value for required gender field
         },
         select: {
           id: true,
@@ -121,32 +125,22 @@ export const authController = {
           firstName: true,
           lastName: true,
           role: true,
-          gender: true,
-          department: true,
+          createdAt: true,
+          updatedAt: true,
         },
       });
 
-      // Generate JWT token
-      const token = jwt.sign(
-        { userId: user.id, role: user.role },
-        process.env.JWT_SECRET!,
-        { expiresIn: process.env.JWT_EXPIRES_IN }
-      );
-
       return res.status(201).json({
         success: true,
-        data: {
-          token,
-          user,
-        },
+        data: user,
       });
     } catch (error) {
       console.error('Registration error:', error);
       return res.status(500).json({
         success: false,
         error: {
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'An error occurred during registration',
+          code: 'REGISTRATION_FAILED',
+          message: 'Failed to register user',
         },
       });
     }

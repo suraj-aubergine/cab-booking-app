@@ -16,7 +16,15 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
   }
 
   if (allowedRoles && !allowedRoles.includes(user.role)) {
-    return <Navigate to="/app" replace />;
+    // Redirect based on role
+    switch (user.role) {
+      case UserRole.ADMIN:
+        return <Navigate to="/admin" replace />;
+      case UserRole.MANAGER:
+        return <Navigate to="/manager" replace />;
+      default:
+        return <Navigate to="/app" replace />;
+    }
   }
 
   return <>{children}</>;

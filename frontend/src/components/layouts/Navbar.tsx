@@ -39,7 +39,6 @@ export function Navbar() {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src={user?.avatar} alt={user?.firstName} />
                   <AvatarFallback className="bg-indigo-500/10 text-indigo-600">
                     {user?.firstName?.[0]}
                     {user?.lastName?.[0]}

@@ -11,9 +11,15 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Bell } from "lucide-react";
 import { getInitials } from "@/lib/utils";
+import { useAuth } from "@/hooks/useAuth";
 
 export function AdminHeader() {
-  const { user, logout } = useAuthStore();
+  const { user } = useAuthStore();
+  const { logout } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -27,7 +33,6 @@ export function AdminHeader() {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src={user?.avatarUrl} alt={user?.firstName} />
                     <AvatarFallback>
                       {getInitials(`${user?.firstName} ${user?.lastName}`)}
                     </AvatarFallback>
@@ -48,7 +53,7 @@ export function AdminHeader() {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   className="text-red-600 focus:text-red-600"
-                  onClick={logout}
+                  onClick={handleLogout}
                 >
                   Log out
                 </DropdownMenuItem>

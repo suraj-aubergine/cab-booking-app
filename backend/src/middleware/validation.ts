@@ -25,13 +25,14 @@ const loginSchema = z.object({
   password: z.string().min(1),
 });
 
-const registerSchema = z.object({
+export const registerSchema = z.object({
   email: z.string().email(),
-  password: z.string().min(8),
+  password: z.string().min(6),
   firstName: z.string().min(2),
   lastName: z.string().min(2),
-  gender: z.nativeEnum(Gender),
-  department: z.string(),
+  role: z.nativeEnum(UserRole),
+  department: z.string().optional(),
+  gender: z.nativeEnum(Gender).optional(),
 });
 
 const createBookingSchema = z.object({
