@@ -32,6 +32,22 @@ export const router = createBrowserRouter([
     errorElement: <ErrorPage />,
     children: [
       {
+        path: '/admin',
+        element: (
+          <ProtectedRoute allowedRoles={[UserRole.ADMIN]}>
+            <AdminLayout />
+          </ProtectedRoute>
+        ),
+        children: [
+          { index: true, element: <AdminDashboard /> },
+          { path: 'users', element: <UsersTable /> },
+          { path: 'drivers', element: <DriversTable /> },
+          { path: 'vehicles', element: <VehiclesTable /> },
+          { path: 'bookings', element: <BookingsTable /> },
+          { path: 'settings', element: <AdminSettings /> },
+        ],
+      },
+      {
         path: '/login',
         element: <Login />,
       },
@@ -53,24 +69,6 @@ export const router = createBrowserRouter([
           { path: 'bookings', element: <Bookings /> },
           { path: 'bookings/new', element: <NewBooking /> },
           { path: 'settings', element: <Settings /> },
-        ],
-      },
-      {
-        path: '/app/admin',
-        element: (
-          <ErrorBoundary>
-            <ProtectedRoute allowedRoles={[UserRole.ADMIN]}>
-              <AdminLayout />
-            </ProtectedRoute>
-          </ErrorBoundary>
-        ),
-        children: [
-          { index: true, element: <AdminDashboard /> },
-          { path: 'users', element: <UsersTable /> },
-          { path: 'drivers', element: <DriversTable /> },
-          { path: 'vehicles', element: <VehiclesTable /> },
-          { path: 'bookings', element: <BookingsTable /> },
-          { path: 'settings', element: <AdminSettings /> },
         ],
       },
       {

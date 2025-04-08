@@ -2,7 +2,13 @@ export enum UserRole {
   ADMIN = 'ADMIN',
   MANAGER = 'MANAGER',
   EMPLOYEE = 'EMPLOYEE',
-  DRIVER = 'DRIVER'
+  DRIVER = 'DRIVER',
+}
+
+export enum Gender {
+  MALE = 'MALE',
+  FEMALE = 'FEMALE',
+  OTHER = 'OTHER',
 }
 
 export interface User {

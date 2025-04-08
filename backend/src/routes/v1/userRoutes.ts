@@ -89,7 +89,13 @@ router.post('/', validateCreateUser, userController.createUser);
  *       403:
  *         description: Forbidden - Admin access required
  */
-router.get('/', authenticateToken, authorize([UserRole.ADMIN]), (req, res, next) => userController.getAllUsers(req, res));
+router.get(
+  '/',
+  authenticateToken,
+  authorize([UserRole.ADMIN]),
+  userController.getAllUsers
+);
+
 router.get('/:id', authenticateToken, userController.getUserById);
 router.put('/:id', authenticateToken, validateUpdateUser, userController.updateUser);
 router.delete('/:id', authenticateToken, authorize([UserRole.ADMIN]), userController.deleteUser);
