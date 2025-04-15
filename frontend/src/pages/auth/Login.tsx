@@ -1,9 +1,9 @@
+import { useState } from "react";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { useNavigate, Link } from "react-router-dom";
-import { useMutation } from "@tanstack/react-query";
-import { api } from "@/lib/api";
+import * as z from "zod";
+import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -15,89 +15,55 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/useToast";
-import { useAuthStore } from "@/stores/useAuthStore";
-import { UserRole } from "@/types/auth";
 import { BackgroundBeams } from "@/components/ui/background-beams";
 import React from "react";
 import { BackgroundImage } from "@/components/ui/background-image";
 import { AbstractBackground } from "@/components/ui/abstract-background";
+import { UserRole } from "@/types/auth";
+import { useAuthStore } from "@/stores/useAuthStore";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
-type LoginForm = z.infer<typeof loginSchema>;
+type LoginFormValues = z.infer<typeof loginSchema>;
 
 export function Login() {
-  const { toast } = useToast();
   const navigate = useNavigate();
-  const setToken = useAuthStore((state) => state.setToken);
-  const setUser = useAuthStore((state) => state.setUser);
-  const token = useAuthStore((state) => state.token);
+  const location = useLocation();
+  const { login } = useAuth();
+  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Redirect if already logged in
-  React.useEffect(() => {
-    if (token) {
-      navigate('/app');
-    }
-  }, [token, navigate]);
-
-  const form = useForm<LoginForm>({
+  const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
   });
 
-  const login = useMutation({
-    mutationFn: async (data: LoginForm) => {
-      try {
-        const response = await api.post("/auth/login", data);
-        if (!response.data?.data?.token) {
-          throw new Error("Invalid response from server");
-        }
-        return response.data.data;
-      } catch (error: any) {
-        // Handle different types of errors
-        if (error.response?.status === 401) {
-          throw new Error("Invalid email or password");
-        } else if (error.response?.data?.message) {
-          throw new Error(error.response.data.message);
-        } else {
-          throw new Error("Failed to login. Please try again.");
-        }
-      }
-    },
-    onSuccess: (data) => {
-      setToken(data.token);
-      setUser(data.user);
+  async function onSubmit(data: LoginFormValues) {
+    try {
+      setIsLoading(true);
+      const user = await login(data);
+      
+      // Navigation will be handled by AuthProvider
       toast({
-        title: "Welcome back!",
+        title: "Success",
         description: "Successfully logged in",
       });
-      
-      // Redirect based on user role
-      switch (data.user.role) {
-        case UserRole.ADMIN:
-          navigate("/app/admin");
-          break;
-        case UserRole.DRIVER:
-          navigate("/app/driver");
-          break;
-        default:
-          navigate("/app");
-      }
-    },
-    onError: (error: Error) => {
+    } catch (error) {
+      console.error('Login error:', error);
       toast({
-        title: "Login Failed",
-        description: error.message,
+        title: "Error",
+        description: "Failed to log in. Please try again.",
         variant: "destructive",
-        duration: 3000,
       });
-    },
-  });
-
-  function onSubmit(data: LoginForm) {
-    login.mutate(data);
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
@@ -157,9 +123,9 @@ export function Login() {
             <Button
               type="submit"
               className="w-full"
-              disabled={login.isPending}
+              disabled={isLoading}
             >
-              {login.isPending ? "Logging in..." : "Login"}
+              {isLoading ? "Signing in..." : "Sign in"}
             </Button>
           </form>
         </Form>

@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
-import { prisma } from '../index';
-import { hashPassword } from '../utils/auth';
-import { UserCreateRequest } from '../types';
-import { Prisma } from '@prisma/client';
+import { prisma } from '../lib/prisma';
+import { createResponse } from '../utils/response';
+import { UserRole } from '@prisma/client';
+import { hashPassword } from '../utils/password';
 
 export const userController = {
   // Get all users with pagination
@@ -10,12 +10,22 @@ export const userController = {
     try {
       const page = Number(req.query.page) || 1;
       const limit = Number(req.query.limit) || 10;
-      const skip = (page - 1) * limit;
+      const search = req.query.search as string;
+
+      const where = search ? {
+        OR: [
+          { email: { contains: search, mode: 'insensitive' } },
+          { firstName: { contains: search, mode: 'insensitive' } },
+          { lastName: { contains: search, mode: 'insensitive' } },
+        ],
+      } : {};
 
       const [users, total] = await Promise.all([
         prisma.user.findMany({
-          skip,
+          where,
+          skip: (page - 1) * limit,
           take: limit,
+          orderBy: { createdAt: 'desc' },
           select: {
             id: true,
             email: true,
@@ -23,33 +33,27 @@ export const userController = {
             lastName: true,
             role: true,
             department: true,
-            gender: true,
             createdAt: true,
             updatedAt: true,
           },
         }),
-        prisma.user.count(),
+        prisma.user.count({ where }),
       ]);
 
-      return res.json({
-        success: true,
-        data: users,
-        meta: {
+      return res.json(createResponse({
+        users,
+        pagination: {
           total,
           page,
           limit,
-          hasMore: total > skip + users.length,
+          totalPages: Math.ceil(total / limit),
         },
-      });
+      }));
     } catch (error) {
-      console.error('Error getting users:', error);
-      return res.status(500).json({
-        success: false,
-        error: {
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'An error occurred while fetching users',
-        },
-      });
+      console.error('Get all users error:', error);
+      return res.status(500).json(
+        createResponse(null, 'Failed to fetch users')
+      );
     }
   },
 
@@ -99,28 +103,28 @@ export const userController = {
   },
 
   // Create new user
-  async createUser(req: Request<{}, {}, UserCreateRequest>, res: Response) {
+  async createUser(req: Request, res: Response) {
     try {
-      const { email, password, firstName, lastName, role, gender, department, managerId } = req.body;
+      const { email, password, firstName, lastName, role, gender, department } = req.body;
 
-      // Check if email already exists
+      // Check if user already exists
       const existingUser = await prisma.user.findUnique({
         where: { email },
       });
 
       if (existingUser) {
-        return res.status(400).json({
-          success: false,
-          error: {
-            code: 'EMAIL_EXISTS',
-            message: 'Email already registered',
-          },
-        });
+        return res.status(409).json(
+          createResponse(null, {
+            code: 'USER_EXISTS',
+            message: 'User with this email already exists',
+          })
+        );
       }
 
       // Hash password
       const hashedPassword = await hashPassword(password);
 
+      // Create user
       const user = await prisma.user.create({
         data: {
           email,
@@ -130,7 +134,6 @@ export const userController = {
           role,
           gender,
           department,
-          managerId,
         },
         select: {
           id: true,
@@ -138,36 +141,22 @@ export const userController = {
           firstName: true,
           lastName: true,
           role: true,
-          department: true,
           gender: true,
+          department: true,
           createdAt: true,
           updatedAt: true,
         },
       });
 
-      return res.status(201).json({
-        success: true,
-        data: user,
-      });
+      return res.status(201).json(createResponse(user));
     } catch (error) {
-      console.error('Error creating user:', error);
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        return res.status(400).json({
-          success: false,
-          error: {
-            code: 'INVALID_DATA',
-            message: 'Invalid data provided',
-            details: error.message,
-          },
-        });
-      }
-      return res.status(500).json({
-        success: false,
-        error: {
+      console.error('Create user error:', error);
+      return res.status(500).json(
+        createResponse(null, {
           code: 'INTERNAL_SERVER_ERROR',
-          message: 'An error occurred while creating user',
-        },
-      });
+          message: 'Failed to create user',
+        })
+      );
     }
   },
 

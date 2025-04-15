@@ -2,14 +2,14 @@ import { Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import { UserRole, Gender, VehicleType } from '@prisma/client';
 
-const createUserSchema = z.object({
+export const createUserSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8),
   firstName: z.string().min(2),
   lastName: z.string().min(2),
-  role: z.nativeEnum(UserRole),
-  gender: z.nativeEnum(Gender),
-  department: z.string(),
+  role: z.enum(['ADMIN', 'MANAGER', 'EMPLOYEE', 'DRIVER']),
+  gender: z.enum(['MALE', 'FEMALE', 'OTHER']),
+  department: z.string().min(2),
   managerId: z.string().uuid().optional(),
 });
 
@@ -25,13 +25,14 @@ const loginSchema = z.object({
   password: z.string().min(1),
 });
 
-const registerSchema = z.object({
+export const registerSchema = z.object({
   email: z.string().email(),
-  password: z.string().min(8),
+  password: z.string().min(6),
   firstName: z.string().min(2),
   lastName: z.string().min(2),
-  gender: z.nativeEnum(Gender),
-  department: z.string(),
+  role: z.nativeEnum(UserRole),
+  department: z.string().optional(),
+  gender: z.nativeEnum(Gender).optional(),
 });
 
 const createBookingSchema = z.object({
@@ -52,14 +53,13 @@ export const validateCreateUser = (req: Request, res: Response, next: NextFuncti
     next();
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return res.status(400).json({
-        success: false,
-        error: {
+      return res.status(400).json(
+        createResponse(null, {
           code: 'VALIDATION_ERROR',
           message: 'Invalid request data',
           details: error.errors,
-        },
-      });
+        })
+      );
     }
     next(error);
   }

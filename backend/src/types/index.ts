@@ -1,7 +1,8 @@
 export enum UserRole {
-  EMPLOYEE = 'EMPLOYEE',
+  ADMIN = 'ADMIN',
   MANAGER = 'MANAGER',
-  ADMIN = 'ADMIN'
+  EMPLOYEE = 'EMPLOYEE',
+  DRIVER = 'DRIVER'
 }
 
 export enum Gender {

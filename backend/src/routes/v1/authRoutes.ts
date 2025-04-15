@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { authController } from '../../controllers/authController';
 import { validateLogin, validateRegister } from '../../middleware/validation';
-import { authenticate } from '../../middleware/auth';
+import { authenticateToken } from '../../middleware/auth';
 
 const router = Router();
 
@@ -109,6 +109,6 @@ router.post('/register', validateRegister, authController.register);
  *       401:
  *         description: Not authenticated
  */
-router.get('/me', authenticate, authController.me);
+router.get('/me', authenticateToken, authController.me);
 
 export default router; 

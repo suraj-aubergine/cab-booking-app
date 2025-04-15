@@ -1,17 +1,24 @@
 import { Request, Response } from 'express';
 import { prisma } from '../lib/prisma';
 import { createResponse } from '../utils/response';
-import { UserRole } from '@prisma/client';
+import { UserRole, Prisma } from '@prisma/client';
+import { startOfMonth, subMonths, startOfDay, endOfDay, format } from 'date-fns';
 
 export const adminController = {
   // Stats
   async getStats(req: Request, res: Response) {
     try {
+      const today = new Date();
+      const lastWeek = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+      const lastDay = new Date(today.getTime() - 24 * 60 * 60 * 1000);
+
       const [
         userStats,
+        driverStats,
         bookingStats,
         incidents,
-        bookingTrends
+        revenue,
+        trends
       ] = await Promise.all([
         // User stats
         prisma.$transaction([
@@ -19,8 +26,29 @@ export const adminController = {
           prisma.user.count({
             where: {
               createdAt: {
-                gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) // Last 7 days
+                gte: startOfDay(lastWeek)
               }
+            }
+          }),
+          prisma.user.count({
+            where: {
+              lastLoginAt: {
+                gte: startOfDay(lastDay)
+              }
+            }
+          })
+        ]),
+        // Driver stats
+        prisma.$transaction([
+          prisma.driver.count(),
+          prisma.driver.count({
+            where: {
+              status: 'AVAILABLE'
+            }
+          }),
+          prisma.driver.count({
+            where: {
+              status: 'ON_DUTY'
             }
           })
         ]),
@@ -29,52 +57,143 @@ export const adminController = {
           by: ['status'],
           _count: true
         }),
-        // Incidents/Safety stats
-        prisma.incident.aggregate({
-          _count: {
-            id: true,
-          },
-          where: {
-            status: 'PENDING'
-          }
-        }),
-        // Booking trends (last 7 days)
-        prisma.booking.groupBy({
-          by: ['createdAt'],
-          where: {
-            createdAt: {
-              gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+        // Incidents
+        prisma.$transaction([
+          prisma.incident.count(),
+          prisma.incident.count({
+            where: {
+              resolvedAt: null
             }
-          },
-          _count: true
-        })
+          })
+        ]),
+        // Revenue
+        prisma.$transaction([
+          prisma.booking.aggregate({
+            _sum: {
+              fare: true
+            }
+          }),
+          prisma.booking.aggregate({
+            where: {
+              createdAt: {
+                gte: startOfMonth(new Date())
+              }
+            },
+            _sum: {
+              fare: true
+            }
+          }),
+          prisma.booking.aggregate({
+            where: {
+              createdAt: {
+                gte: startOfMonth(subMonths(new Date(), 1)),
+                lt: startOfMonth(new Date())
+              }
+            },
+            _sum: {
+              fare: true
+            }
+          })
+        ]),
+        // Trends
+        prisma.$transaction([
+          // Booking trends
+          prisma.booking.groupBy({
+            by: ['createdAt'],
+            where: {
+              createdAt: {
+                gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+              }
+            },
+            orderBy: {
+              createdAt: 'asc'
+            },
+            _count: true
+          }),
+          // Revenue trends
+          prisma.booking.groupBy({
+            by: ['createdAt'],
+            where: {
+              createdAt: {
+                gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+              }
+            },
+            orderBy: {
+              createdAt: 'asc'
+            },
+            _sum: {
+              fare: true
+            }
+          }),
+          // Incident trends
+          prisma.incident.groupBy({
+            by: ['createdAt'],
+            where: {
+              createdAt: {
+                gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+              }
+            },
+            orderBy: {
+              createdAt: 'asc'
+            },
+            _count: true
+          })
+        ])
       ]);
 
-      const [totalUsers, newUsers] = userStats;
+      const [totalUsers, newUsers, activeUsers] = userStats;
+      const [totalDrivers, availableDrivers, onDutyDrivers] = driverStats;
+      const [totalIncidents, pendingIncidents] = incidents;
+      const [totalRevenue, thisMonthRevenue, lastMonthRevenue] = revenue;
+      const [bookingTrends, revenueTrends, incidentTrends] = trends;
 
       return res.json(createResponse({
         users: {
-          total: totalUsers,
-          newThisWeek: newUsers
+          total: Number(totalUsers),
+          newThisWeek: Number(newUsers),
+          activeToday: Number(activeUsers)
         },
-        bookings: bookingStats.reduce((acc, curr) => ({
-          ...acc,
-          [curr.status.toLowerCase()]: curr._count
-        }), {}),
+        drivers: {
+          total: Number(totalDrivers),
+          available: Number(availableDrivers),
+          onDuty: Number(onDutyDrivers)
+        },
+        bookings: {
+          total: bookingStats.reduce((acc, curr) => acc + Number(curr._count), 0),
+          pending: Number(bookingStats.find(b => b.status === 'PENDING')?._count || 0),
+          completed: Number(bookingStats.find(b => b.status === 'COMPLETED')?._count || 0),
+          cancelled: Number(bookingStats.find(b => b.status === 'CANCELLED')?._count || 0)
+        },
         incidents: {
-          total: incidents._count.id,
-          pending: incidents._count.id
+          total: Number(totalIncidents),
+          pending: Number(pendingIncidents)
+        },
+        revenue: {
+          total: Number(totalRevenue._sum.fare || 0),
+          thisMonth: Number(thisMonthRevenue._sum.fare || 0),
+          lastMonth: Number(lastMonthRevenue._sum.fare || 0)
         },
         trends: {
           bookings: bookingTrends.map(trend => ({
-            date: trend.createdAt,
-            count: trend._count
+            date: format(trend.createdAt, 'yyyy-MM-dd'),
+            count: Number(trend._count)
+          })),
+          revenue: revenueTrends.map(trend => ({
+            date: format(trend.createdAt, 'yyyy-MM-dd'),
+            amount: Number(trend._sum?.fare || 0)
+          })),
+          incidents: incidentTrends.map(trend => ({
+            date: format(trend.createdAt, 'yyyy-MM-dd'),
+            count: Number(trend._count)
           }))
         }
       }));
     } catch (error) {
       console.error('Admin stats error:', error);
-      return res.status(500).json(createResponse(null, 'Failed to fetch admin stats'));
+      return res.status(500).json(createResponse(null, {
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Failed to fetch admin stats'
+      }));
     }
   },
 

@@ -1,36 +1,29 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
-
-export interface AdminStats {
-  users: {
-    total: number;
-    activeToday: number;
-    newThisWeek: number;
-  };
-  bookings: {
-    total: number;
-    pending: number;
-    completed: number;
-    cancelled: number;
-  };
-  revenue: {
-    total: number;
-    thisMonth: number;
-    lastMonth: number;
-  };
-  trends: {
-    bookings: { date: string; count: number }[];
-    revenue: { date: string; amount: number }[];
-  };
-}
+import { AdminStats } from '@/types/admin';
+import { useToast } from '@/hooks/useToast';
 
 export function useAdminStats() {
+  const { toast } = useToast();
+
   return useQuery<AdminStats>({
     queryKey: ['admin-stats'],
     queryFn: async () => {
-      const { data } = await api.get('/admin/stats');
-      return data.data;
+      try {
+        const { data } = await api.get('/admin/stats');
+        return data.data;
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to fetch admin statistics",
+          variant: "destructive",
+        });
+        throw error;
+      }
     },
+    refetchInterval: 30000, // Refetch every 30 seconds
+    retry: 2, // Retry failed requests up to 2 times
+    staleTime: 10000, // Consider data fresh for 10 seconds
   });
 }
 
@@ -40,6 +33,31 @@ export function useUsersList() {
     queryFn: async () => {
       const { data } = await api.get('/admin/users');
       return data.data;
+    },
+  });
+}
+
+export function useDeleteUser() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (userId: string) => {
+      await api.delete(`/admin/users/${userId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users-list'] });
+      toast({
+        title: "Success",
+        description: "User deleted successfully",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to delete user",
+        variant: "destructive",
+      });
     },
   });
 }

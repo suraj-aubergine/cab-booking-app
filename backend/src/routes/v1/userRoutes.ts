@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { userController } from '../../controllers/userController';
 import { validateCreateUser, validateUpdateUser } from '../../middleware/validation';
-import { authenticate, authorize } from '../../middleware/auth';
+import { authenticateToken, authorize } from '../../middleware/auth';
 import { UserRole } from '@prisma/client';
 
 const router = Router();
@@ -89,9 +89,15 @@ router.post('/', validateCreateUser, userController.createUser);
  *       403:
  *         description: Forbidden - Admin access required
  */
-router.get('/', authenticate, authorize([UserRole.ADMIN]), userController.getAllUsers);
-router.get('/:id', authenticate, userController.getUserById);
-router.put('/:id', authenticate, validateUpdateUser, userController.updateUser);
-router.delete('/:id', authenticate, authorize([UserRole.ADMIN]), userController.deleteUser);
+router.get(
+  '/',
+  authenticateToken,
+  authorize([UserRole.ADMIN]),
+  userController.getAllUsers
+);
+
+router.get('/:id', authenticateToken, userController.getUserById);
+router.put('/:id', authenticateToken, validateUpdateUser, userController.updateUser);
+router.delete('/:id', authenticateToken, authorize([UserRole.ADMIN]), userController.deleteUser);
 
 export default router; 

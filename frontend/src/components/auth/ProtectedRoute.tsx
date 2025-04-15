@@ -8,16 +8,23 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
-  const { user, token } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
   const location = useLocation();
 
-  if (!token) {
-    // Save the attempted URL for redirecting after login
-    return <Navigate to="/login" state={{ from: location.pathname }} replace />;
+  if (!isAuthenticated || !user) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  if (allowedRoles && user && !allowedRoles.includes(user.role)) {
-    return <Navigate to="/app" replace />;
+  if (allowedRoles && !allowedRoles.includes(user.role)) {
+    // Redirect based on role
+    switch (user.role) {
+      case UserRole.ADMIN:
+        return <Navigate to="/admin" replace />;
+      case UserRole.MANAGER:
+        return <Navigate to="/manager" replace />;
+      default:
+        return <Navigate to="/app" replace />;
+    }
   }
 
   return <>{children}</>;
