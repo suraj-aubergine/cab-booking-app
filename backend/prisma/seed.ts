@@ -1,4 +1,5 @@
-import { PrismaClient, UserRole, Gender, BookingStatus } from '@prisma/client'
+import { BookingStatus, Gender, PrismaClient, UserRole } from '@prisma/client'
+import * as process from 'process'
 import { hashPassword } from '../src/utils/auth'
 
 const prisma = new PrismaClient()
@@ -61,8 +62,8 @@ async function main() {
   // Create admin user
   const adminUser = await prisma.user.create({
     data: {
-      email: 'admin@example.com',
-      password: await hashPassword('password123'),
+      email: 'admin@gmail.com',
+      password: await hashPassword('123456'),
       firstName: 'John',
       lastName: 'Doe',
       role: UserRole.ADMIN,
@@ -74,8 +75,8 @@ async function main() {
   // Create some employees
   const employee1 = await prisma.user.create({
     data: {
-      email: 'employee1@example.com',
-      password: await hashPassword('password123'),
+      email: 'employee1@gmail.com',
+      password: await hashPassword('123456'),
       firstName: 'Jane',
       lastName: 'Smith',
       role: UserRole.EMPLOYEE,

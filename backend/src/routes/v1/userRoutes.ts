@@ -1,8 +1,8 @@
+import { UserRole } from '@prisma/client';
 import { Router } from 'express';
 import { userController } from '../../controllers/userController';
-import { validateCreateUser, validateUpdateUser } from '../../middleware/validation';
 import { authenticateToken, authorize } from '../../middleware/auth';
-import { UserRole } from '@prisma/client';
+import { validateCreateUser, validateUpdateUser } from '../../middleware/validation';
 
 const router = Router();
 
